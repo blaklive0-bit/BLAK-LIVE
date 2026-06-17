@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLAK LIVE - Live Streaming Channels</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+
+        :root {
+            --primary: #a855f7;
+            --primary-light: #c084fc;
+            --primary-dark: #7e22ce;
+            --accent: #d946ef;
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-card-hover: #1a1a28;
+            --border: #2d2d3d;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --glow: rgba(168, 85, 247, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; overflow: hidden;
+        }
+        .bg-animation::before {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(217, 70, 239, 0.06) 0%, transparent 50%),
+                        radial-gradient(circle at 50% 50%, rgba(126, 34, 206, 0.05) 0%, transparent 60%);
+            animation: bgFloat 20s ease-in-out infinite;
+        }
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(2%, 2%) rotate(1deg); }
+            66% { transform: translate(-1%, 1%) rotate(-1deg); }
+        }
+
+        .particles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        .particle {
+            position: absolute; width: 3px; height: 3px;
+            background: var(--primary); border-radius: 50%; opacity: 0.4;
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        .header {
+            position: relative; z-index: 10;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.8) 100%);
+            backdrop-filter: blur(20px);
+        }
+        .logo-container {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 10px;
+        }
+        .logo-icon {
+            width: 80px; height: 80px;
+            position: relative; display: flex;
+            align-items: center; justify-content: center;
+        }
+        .logo-b {
+            font-size: 70px; font-weight: 800;
+            background: linear-gradient(135deg, #e879f9 0%, #a855f7 50%, #7e22ce 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; position: relative; line-height: 1;
+        }
+        .logo-b::after {
+            content: '?'; position: absolute; font-size: 35px;
+            -webkit-text-fill-color: #0a0a0f; top: 50%; left: 50%;
+            transform: translate(-50%, -55%); filter: drop-shadow(0 0 10px var(--primary));
+        }
+        .logo-text {
+            font-size: 32px; font-weight: 800;
+            letter-spacing: 8px; color: var(--text-primary); margin-top: 5px;
+        }
+        .logo-live {
+            font-size: 14px; font-weight: 600;
+            letter-spacing: 12px; color: var(--primary-light);
+            display: flex; align-items: center; gap: 15px; margin-top: -5px;
+        }
+        .logo-live::before, .logo-live::after {
+            content: ''; width: 40px; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        .subtitle {
+            color: var(--text-secondary); font-size: 14px;
+            margin-top: 15px; font-weight: 400;
+        }
+        .live-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444; padding: 6px 16px;
+            border-radius: 50px; font-size: 12px; font-weight: 700;
+            margin-top: 15px; animation: pulse 2s ease-in-out infinite;
+        }
+        .live-dot {
+            width: 8px; height: 8px; background: #ef4444;
+            border-radius: 50%; box-shadow: 0 0 10px #ef4444;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        }
+
+        .main-content {
+            position: relative; z-index: 10;
+            max-width: 1200px; margin: 0 auto; padding: 40px 20px;
+        }
+        .section-title { text-align: center; margin-bottom: 40px; }
+        .section-title h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .section-title p { color: var(--text-secondary); font-size: 14px; }
+
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px; margin-bottom: 40px;
+        }
+        .channel-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; cursor: pointer;
+            text-decoration: none; color: inherit; display: block;
+        }
+        .channel-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+            background-size: 200% 100%; animation: shimmer 3s linear infinite;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .channel-card:hover {
+            transform: translateY(-8px); border-color: var(--primary-dark);
+            box-shadow: 0 20px 40px rgba(168, 85, 247, 0.15), 0 0 0 1px rgba(168, 85, 247, 0.2);
+        }
+        .channel-card:hover::before { opacity: 1; }
+
+        .card-thumbnail {
+            position: relative; height: 180px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+            overflow: hidden;
+        }
+        .card-thumbnail img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .channel-card:hover .card-thumbnail img { transform: scale(1.1); }
+        .play-overlay {
+            position: absolute; inset: 0;
+            background: rgba(10, 10, 15, 0.6);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s;
+        }
+        .channel-card:hover .play-overlay { background: rgba(168, 85, 247, 0.2); }
+        .play-btn {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+            transition: all 0.3s; border: 2px solid rgba(255,255,255,0.1);
+        }
+        .play-btn i { color: white; font-size: 22px; margin-right: -3px; }
+        .channel-card:hover .play-btn { transform: scale(1.15); box-shadow: 0 0 50px rgba(168, 85, 247, 0.7); }
+
+        .live-tag {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(239, 68, 68, 0.9); color: white;
+            padding: 4px 12px; border-radius: 6px;
+            font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; gap: 5px;
+            backdrop-filter: blur(10px); z-index: 2;
+        }
+        .live-tag::before {
+            content: ''; width: 6px; height: 6px;
+            background: white; border-radius: 50%;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        .card-info { padding: 20px; }
+        .channel-number {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 10px; font-weight: 800; font-size: 16px;
+            margin-bottom: 12px; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+        }
+        .channel-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+        .channel-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+        .card-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px 20px; margin-top: -5px;
+        }
+        .viewers { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 12px; }
+        .viewers i { color: var(--primary-light); }
+        .watch-now {
+            color: var(--primary-light); font-size: 13px; font-weight: 600;
+            display: flex; align-items: center; gap: 5px; transition: gap 0.3s;
+        }
+        .channel-card:hover .watch-now { gap: 10px; color: var(--accent); }
+
+        .footer {
+            position: relative; z-index: 10;
+            text-align: center; padding: 30px 20px;
+            border-top: 1px solid var(--border); margin-top: 40px;
+        }
+        .footer-text { color: var(--text-muted); font-size: 13px; }
+        .footer-brand { color: var(--primary-light); font-weight: 700; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--primary-dark); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        @media (max-width: 768px) {
+            .logo-text { font-size: 24px; letter-spacing: 5px; }
+            .logo-b { font-size: 55px; }
+            .channels-grid { grid-template-columns: 1fr; gap: 20px; }
+            .section-title h2 { font-size: 20px; }
+        }
+
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="particles" id="particles"></div>
+
+    <header class="header">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <span class="logo-b">B</span>
+            </div>
+            <div class="logo-text">BLAK</div>
+            <div class="logo-live">LIVE</div>
+            <div class="live-badge">
+                <span class="live-dot"></span>
+                Live Streaming Available Now
+            </div>
+            <p class="subtitle">Watch your favorite channels in high quality without interruption</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="section-title">
+            <h2>?? Available Channels</h2>
+            <p>Select the channel you want to watch</p>
+        </div>
+
+        <div class="channels-grid">
+
+            <!-- Channel 1 -->
+            <a href="channel1.html" class="channel-card">
+                <div class="card-thumbnail">
+                    <img src="https://kimi-web-img.moonshot.cn/img/cdn.vectorstock.com/69dfbf82a50d0f915115268cdccc175dbd3c126d.jpg" alt="Channel 1 - Algeria Matches">
+                    <div class="live-tag">LIVE</div>
+                    <div class="play-overlay">
+                        <div class="play-btn">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="channel-number">1</div>
+                    <h3 class="channel-name">Channel 1 - Algeria Matches</h3>
+                    <p class="channel-desc">Live broadcast of Algerian football matches and sports events</p>
+                </div>
+                <div class="card-footer">
+                    <div class="viewers">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="watch-now">
+                        Watch Now <i class="fas fa-arrow-left"></i>
+                    </div>
+                </div>
+            </a>
+            <!-- Channel 2 -->
+            <a href="channel2.html" class="channel-card">
+                <div class="card-thumbnail">
+                    <img src="https://kimi-web-img.moonshot.cn/img/c8.alamy.com/599dce9a4e207182e0557b99a9c054ee2fd83550.jpg" alt="Channel 2 - Algeria Matches">
+                    <div class="live-tag">LIVE</div>
+                    <div class="play-overlay">
+                        <div class="play-btn">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="channel-number">2</div>
+                    <h3 class="channel-name">Channel 2 - Algeria Matches</h3>
+                    <p class="channel-desc">Live broadcast of Algerian football matches and sports events</p>
+                </div>
+                <div class="card-footer">
+                    <div class="viewers">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="watch-now">
+                        Watch Now <i class="fas fa-arrow-left"></i>
+                    </div>
+                </div>
+            </a>
+            <!-- Channel 3 -->
+            <a href="channel3.html" class="channel-card">
+                <div class="card-thumbnail">
+                    <img src="https://kimi-web-img.moonshot.cn/img/upload.wikimedia.org/3b3f13905ac94229d2483d827aa65dcd91bfd53a.png" alt="Channel 3 - Algeria Matches">
+                    <div class="live-tag">LIVE</div>
+                    <div class="play-overlay">
+                        <div class="play-btn">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="channel-number">3</div>
+                    <h3 class="channel-name">Channel 3 - Algeria Matches</h3>
+                    <p class="channel-desc">Live broadcast of Algerian football matches and sports events</p>
+                </div>
+                <div class="card-footer">
+                    <div class="viewers">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="watch-now">
+                        Watch Now <i class="fas fa-arrow-left"></i>
+                    </div>
+                </div>
+            </a>
+            <!-- Channel 4 -->
+            <a href="channel4.html" class="channel-card">
+                <div class="card-thumbnail">
+                    <img src="https://kimi-web-img.moonshot.cn/img/i.logos-download.com/ed0e37e10b15b3cbf66d6139a4c4dfa3a2616259.png" alt="Channel 4 - Algeria Matches">
+                    <div class="live-tag">LIVE</div>
+                    <div class="play-overlay">
+                        <div class="play-btn">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="channel-number">4</div>
+                    <h3 class="channel-name">Channel 4 - Algeria Matches</h3>
+                    <p class="channel-desc">Live broadcast of Algerian football matches and sports events</p>
+                </div>
+                <div class="card-footer">
+                    <div class="viewers">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="watch-now">
+                        Watch Now <i class="fas fa-arrow-left"></i>
+                    </div>
+                </div>
+            </a>
+            <!-- Channel 5 -->
+            <a href="channel5.html" class="channel-card">
+                <div class="card-thumbnail">
+                    <img src="https://kimi-web-img.moonshot.cn/img/static.wikia.nocookie.net/1aaf220e6fba74e8b5ed74e12d43f05090b90b67" alt="Channel 5 - Algeria Matches">
+                    <div class="live-tag">LIVE</div>
+                    <div class="play-overlay">
+                        <div class="play-btn">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="channel-number">5</div>
+                    <h3 class="channel-name">Channel 5 - Algeria Matches</h3>
+                    <p class="channel-desc">Live broadcast of Algerian football matches and sports events</p>
+                </div>
+                <div class="card-footer">
+                    <div class="viewers">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="watch-now">
+                        Watch Now <i class="fas fa-arrow-left"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p class="footer-text">
+            All Rights Reserved &copy; 2026 <span class="footer-brand">BLAK LIVE</span>
+        </p>
+    </footer>
+
+    <script>
+
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particle.style.animationDelay = Math.random() * 10 + 's';
+            particle.style.width = (Math.random() * 3 + 1) + 'px';
+            particle.style.height = particle.style.width;
+            particlesContainer.appendChild(particle);
+        }
+
+    </script>
+</body>
+</html>
